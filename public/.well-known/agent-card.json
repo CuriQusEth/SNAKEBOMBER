@@ -36,6 +36,32 @@
     "task-orchestration",
     "mcp-command-execution"
   ],
+  "skills": [
+    {
+      "name": "snake-game-management",
+      "description": "Manages game loops and player state validation"
+    },
+    {
+      "name": "bombing-mechanics",
+      "description": "Calculates bomb timers, radius, and collision events"
+    },
+    {
+      "name": "multi-game-management",
+      "description": "Coordinates concurrent SnakeBomber sessions"
+    },
+    {
+      "name": "reward-automation",
+      "description": "Automates on-chain payouts and reward distribution"
+    },
+    {
+      "name": "daily-operations",
+      "description": "Executes daily tasks and leaderboard indexing"
+    },
+    {
+      "name": "mcp-command-execution",
+      "description": "Processes dynamic commands via Model Context Protocol"
+    }
+  ],
   "supportedChains": ["eip155:8453"],
   "active": true,
   "status": "online"
