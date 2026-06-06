@@ -48,6 +48,7 @@ export interface GameState {
   lastMoveTime: number;
   combo: number;
   comboTimer: number;
+  snakeColor: string;
 }
 
 export const CELL_SIZE = 24;
@@ -101,6 +102,7 @@ export class GameEngine {
       lastMoveTime: 0,
       combo: 0,
       comboTimer: 0,
+      snakeColor: '#39FF14'
     };
   }
 

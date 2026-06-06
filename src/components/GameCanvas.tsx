@@ -109,8 +109,8 @@ export function GameCanvas({ engine }: GameCanvasProps) {
       // Draw Snake
       ctx.shadowBlur = 10;
       state.snake.forEach((segment, i) => {
-        ctx.fillStyle = '#39FF14'; 
-        ctx.shadowColor = '#39FF14';
+        ctx.fillStyle = state.snakeColor || '#39FF14'; 
+        ctx.shadowColor = state.snakeColor || '#39FF14';
         ctx.fillRect(segment.x * CELL_SIZE + 1, segment.y * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
       });
       ctx.shadowBlur = 0;

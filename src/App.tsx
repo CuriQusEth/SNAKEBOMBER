@@ -5,14 +5,15 @@ import { Controls } from './components/Controls';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
 import { generateAttributedTransaction } from './lib/erc8021';
-import { Trophy, Wallet, Zap, Ghost, Skull } from 'lucide-react';
+import { Trophy, Wallet, Zap, Ghost, Skull, Sun } from 'lucide-react';
 
-type ScreenState = 'TITLE' | 'PLAYING' | 'GAME_OVER' | 'LEADERBOARD';
+type ScreenState = 'TITLE' | 'PLAYING' | 'GAME_OVER' | 'LEADERBOARD' | 'GARAGE';
 
 export default function App() {
   const [screen, setScreen] = useState<ScreenState>('TITLE');
   const [engine, setEngine] = useState<GameEngine | null>(null);
   const [score, setScore] = useState(0);
+  const [activeSkin, setActiveSkin] = useState('#39FF14');
   
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
@@ -22,6 +23,7 @@ export default function App() {
   const startGame = () => {
     // 15x20 grid is good for portrait
     const newEngine = new GameEngine(15, 20);
+    newEngine.state.snakeColor = activeSkin; // Support for custom skin
     newEngine.setCallbacks(
       (finalScore) => {
         setScore(finalScore);
@@ -53,7 +55,7 @@ export default function App() {
     }
   };
 
-  const handleGM = async () => {
+  const sendGMTransaction = async () => {
     if (!isConnected) {
       connect({ connector: connectors[0] });
       return;
@@ -70,8 +72,55 @@ export default function App() {
       <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#FF007F]/5 blur-[100px] pointer-events-none" />
 
       {/* Screen Render */}
-      <AnimatePresence mode="wait">
+       <AnimatePresence mode="wait">
         
+       {screen === 'GARAGE' && (
+          <motion.div
+            key="garage"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="flex flex-col items-center z-10 w-full px-6 pt-12 h-screen"
+          >
+             <h2 className="text-2xl font-black text-[#E4E4E7] mb-2 tracking-widest uppercase flex items-center gap-3">
+                <Zap className="text-[#00FFFF]" />
+                Bomber Garage
+             </h2>
+             <p className="text-[10px] text-white/40 mb-8 uppercase tracking-widest font-mono">Unlock & Equip Skins</p>
+
+             <div className="flex-1 w-full flex flex-col gap-4">
+                {[
+                  { name: 'Neon Toxic', color: '#39FF14', desc: 'Default classic green snake.' },
+                  { name: 'Cyber Magenta', color: '#FF007F', desc: 'Hyper damage visualizer.' },
+                  { name: 'Electric Cyan', color: '#00FFFF', desc: 'Speed demon aesthetic.' },
+                  { name: 'Golden Sun', color: '#FFD700', desc: 'Exclusive VIP snake bomber.' }
+                ].map(skin => (
+                  <button 
+                     key={skin.name}
+                     onClick={() => setActiveSkin(skin.color)}
+                     className={`w-full p-4 rounded border text-left flex items-center gap-4 transition-all ${activeSkin === skin.color ? 'border-white/50 bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'border-white/10 bg-black/40 hover:bg-white/5'}`}
+                  >
+                     <div className="w-8 h-8 rounded-full shadow-lg" style={{ backgroundColor: skin.color, boxShadow: `0 0 10px ${skin.color}` }} />
+                     <div className="flex flex-col">
+                        <span className="font-bold uppercase tracking-widest text-xs" style={{ color: skin.color }}>{skin.name}</span>
+                        <span className="text-[10px] font-mono text-white/40">{skin.desc}</span>
+                     </div>
+                     {activeSkin === skin.color && <span className="ml-auto text-[10px] tracking-widest text-white/60 font-bold uppercase">EQUIPPED</span>}
+                  </button>
+                ))}
+             </div>
+
+             <div className="mt-8 pb-12 w-full">
+               <button
+                 onClick={() => setScreen('TITLE')}
+                 className="w-full py-4 bg-white/5 border border-white/20 text-[#E4E4E7] text-xs font-bold rounded hover:bg-white/10 transition uppercase tracking-widest"
+               >
+                 Back to Menu
+               </button>
+             </div>
+          </motion.div>
+       )}
+
         {screen === 'TITLE' && (
           <motion.div
             key="title"
@@ -100,10 +149,18 @@ export default function App() {
 
             <button
                onClick={() => setScreen('LEADERBOARD')}
-               className="w-full max-w-sm py-4 bg-white/5 border border-white/20 text-white/60 text-xs font-bold uppercase tracking-widest rounded hover:bg-white/10 transition-colors flex items-center justify-center gap-2 mb-8"
+               className="w-full max-w-sm py-4 bg-white/5 border border-white/20 text-white/60 text-xs font-bold uppercase tracking-widest rounded hover:bg-white/10 transition-colors flex items-center justify-center gap-2 mb-2"
             >
                <Trophy size={16} />
                Leaderboard
+            </button>
+
+            <button
+               onClick={() => setScreen('GARAGE')}
+               className="w-full max-w-sm py-4 bg-white/5 border border-white/20 text-white/60 text-xs font-bold uppercase tracking-widest rounded hover:bg-white/10 transition-colors flex items-center justify-center gap-2 mb-8"
+            >
+               <Zap size={16} />
+               Bomber Garage (Skins)
             </button>
 
              {/* Connection & 8021 stuff */}
@@ -116,18 +173,22 @@ export default function App() {
                      <Wallet size={16} /> Connect Wallet (Base)
                   </button>
                 ) : (
-                  <div className="flex flex-col items-center gap-2 text-white/40 font-mono text-sm">
+                  <div className="flex flex-col items-center gap-3 text-white/40 font-mono text-sm">
                      <span className="flex items-center gap-2"><Wallet size={14}/> {address?.slice(0, 6)}...{address?.slice(-4)}</span>
                      <button onClick={() => disconnect()} className="text-[#FF007F] text-[10px] uppercase tracking-widest hover:text-[#FF007F]/80">Disconnect</button>
+                     
+                     {isConnected && (
+                       <button
+                         onClick={sendGMTransaction}
+                         className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold"
+                       >
+                         <Sun size={16} />
+                         Say GM
+                       </button>
+                     )}
                   </div>
                 )}
                 <div className="h-px w-full bg-white/10 my-1" />
-                <button
-                   onClick={handleGM}
-                   className="text-[#39FF14] text-[10px] flex items-center gap-1 font-bold uppercase tracking-widest hover:text-[#39FF14]/80 transition-colors"
-                >
-                   Say GM On-Chain <Zap size={10} />
-                </button>
                 <div className="text-[9px] text-white/20 font-mono text-center">
                   Verify with Base Builder Code: <br/>
                   <span className="text-white/40">bc_cy38d3l1</span>
