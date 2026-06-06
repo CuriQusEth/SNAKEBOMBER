@@ -3,7 +3,8 @@ import { GameEngine } from './game/GameEngine';
 import { GameCanvas } from './components/GameCanvas';
 import { Controls } from './components/Controls';
 import { motion, AnimatePresence } from 'motion/react';
-import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useSignMessage, useSendTransaction } from 'wagmi';
+import { encodeFunctionData } from 'viem';
 import { generateAttributedTransaction } from './lib/erc8021';
 import { Trophy, Wallet, Zap, Ghost, Skull, Sun } from 'lucide-react';
 
@@ -19,6 +20,7 @@ export default function App() {
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
+  const { sendTransaction } = useSendTransaction();
 
   const startGame = () => {
     // 15x20 grid is good for portrait
@@ -60,8 +62,21 @@ export default function App() {
       connect({ connector: connectors[0] });
       return;
     }
-    const txAttr = generateAttributedTransaction("0xGM");
-    alert(`Saying GM on Base with attribution: ${txAttr.attribution}`);
+    
+    try {
+      const data = encodeFunctionData({
+        abi: [{ name: 'gm', type: 'function', inputs: [], outputs: [] }],
+        functionName: 'gm'
+      });
+      
+      sendTransaction({
+        to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
+        value: 0n,
+        data,
+      });
+    } catch (error) {
+      console.error("Failed to send transaction:", error);
+    }
   }
 
   return (
